@@ -13,8 +13,9 @@ in an environment of your choosing.
 Whisper also requires the command-line tool [`ffmpeg`](https://ffmpeg.org/) to be installed on your system, which is available from most package managers:
 
 ```
-# on Ubuntu or Debian
+# on Ubuntu or Debian or pi
 sudo apt update && sudo apt install ffmpeg
+sudo apt install portaudio19-dev
 
 # on Arch Linux
 sudo pacman -S ffmpeg
