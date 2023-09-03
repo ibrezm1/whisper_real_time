@@ -1,4 +1,11 @@
-# Real Time Whisper Transcription
+# Real Time Whisper Transcription on Raspberry pi
+
+* Setup mic and speaker/microphone ( Refer reaspberrypi.md )
+* install additional packages 
+* pip install requirements
+* add .env with api keys for open ai 
+* running on tiny
+
 
 ![Demo gif](demo.gif)
 
