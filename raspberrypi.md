@@ -67,3 +67,6 @@ aplay  rec6.wav
 
 # Increase Gain for microphone
 alsamixer
+
+# Setup config from original raspbery pi setup
+https://www.youtube.com/watch?v=caaKhWcfcCY
