@@ -14,11 +14,20 @@ from time import sleep
 from sys import platform
 from dotenv import load_dotenv
 
+import openai
+
+import chat_utils as cu
+
+
 
 def main():
 
     load_dotenv()
-    print (os.getenv('TEST'))
+    openai.api_key = os.getenv('OPENAI_API_KEY')
+
+    messages = []
+    messages.append({"role": "user", "content": "h1"})
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="tiny", help="Model to use",
                         choices=["tiny", "base", "small", "medium", "large"])
@@ -49,21 +58,7 @@ def main():
     # Definitely do this, dynamic energy compensation lowers the energy threshold dramtically to a point where the SpeechRecognizer never stops recording.
     recorder.dynamic_energy_threshold = False
     
-    # Important for linux users. 
-    # Prevents permanent application hang and crash by using the wrong Microphone
-    #if 'linux' in platform:
-    #    mic_name = args.default_microphone
-    #    if not mic_name or mic_name == 'list':
-    #        print("Available microphone devices are: ")
-    #        for index, name in enumerate(sr.Microphone.list_microphone_names()):
-    #            print(f"Microphone with name \"{name}\" found")   
-    #        return
-    #    else:
-    #        for index, name in enumerate(sr.Microphone.list_microphone_names()):
-    #            if mic_name in name:
-    #                source = sr.Microphone(sample_rate=16000, device_index=index)
-    #                break
-    #else:
+    # set default source 
     source = sr.Microphone(sample_rate=16000)
         
     # Load / Download model
@@ -97,6 +92,7 @@ def main():
     # Cue the user that we're ready to go.
     print("Model loaded.\n")
 
+
     while True:
         try:
             now = datetime.utcnow()
@@ -128,10 +124,12 @@ def main():
                 result = audio_model.transcribe(temp_file, fp16=torch.cuda.is_available())
                 text = result['text'].strip()
 
+
                 # If we detected a pause between recordings, add a new item to our transcripion.
                 # Otherwise edit the existing one.
                 if phrase_complete:
                     transcription.append(text)
+                    messages.append({"role": "user", "content": text})
                 else:
                     transcription[-1] = text
 
@@ -142,6 +140,12 @@ def main():
                 # Flush stdout.
                 print('', end='', flush=True)
 
+                if cu.check_for_wake_word(text):
+                    resp = cu.get_completion(messages)
+                    messages.append({"role": "assistant", "content": resp})
+                    print(" -- Jarvis :  " + resp)
+                    cu.speak_text(resp) # See if you can make this async but without hearing itself.
+                
                 # Infinite loops are bad for processors, must sleep.
                 sleep(0.25)
         except KeyboardInterrupt:
